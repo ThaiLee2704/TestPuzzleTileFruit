@@ -10,7 +10,6 @@ public class LevelGenerator : MonoBehaviour
     public TextAsset listIDFile;
 
     public GameObject tilePrefab;
-    public float tileSize = 1f;
 
     public Sprite[] allIconSprites;
 
@@ -64,8 +63,8 @@ public class LevelGenerator : MonoBehaviour
             string finalIconName = idToIconMapping[logicGroupId];
 
             // Bước 4: Khởi tạo khối hình
-            float worldX = x * tileSize;
-            float worldY = y * tileSize;
+            float worldX = x;
+            float worldY = y;
             float worldZ = -z * 1f;
             Vector3 spawnPosition = new Vector3(worldX, worldY, worldZ);
 

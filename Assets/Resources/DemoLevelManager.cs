@@ -1,0 +1,105 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+
+public class DemoLevelManager : MonoBehaviour
+{
+    public TextAsset tepPos;
+    public TextAsset tepID;
+    public TextAsset tepListID;
+
+    public GameObject banMauVienGach;
+    public Sprite[] mangHinhAnhTraiCay;
+
+    private List<DemoTileController> danhSachTatCaGach = new List<DemoTileController>();
+
+    private void Start()
+    {
+        TaoManChoi();
+        TinhToanMangLuoiCheLap();
+    }
+
+    void TaoManChoi()
+    {
+        string[] dongPos = tepPos.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+        string[] dongID = tepID.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+        string[] dongListID = tepListID.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        List<int> danhSachHinhAnh = new List<int>();
+
+        foreach (string dong in dongListID)
+        {
+            danhSachHinhAnh.Add(int.Parse(dong.Trim()));
+        }
+
+        danhSachHinhAnh = danhSachHinhAnh.OrderBy(x => Random.value).ToList();
+
+        List<int> danhSachNhomLogic = new List<int>();
+        foreach (string dong in dongID)
+        {
+            int maLogic = int.Parse(dong.Trim());
+            if (!danhSachNhomLogic.Contains(maLogic))
+            {
+                danhSachNhomLogic.Add(maLogic);
+            }
+        }
+
+        Dictionary<int, Sprite> tuDienAnhXa = new Dictionary<int, Sprite>();
+        for (int i = 0; i < danhSachNhomLogic.Count; i++)
+        {
+            int maHinhAnh = danhSachHinhAnh[i];
+            tuDienAnhXa.Add(danhSachNhomLogic[i], mangHinhAnhTraiCay[maHinhAnh]);
+        }
+
+        for (int i = 0; i < dongPos.Length; i++)
+        {
+            string[] toaDo = dongPos[i].Trim().Split('-');
+            float trucX = float.Parse(toaDo[0]);
+            float trucY = float.Parse(toaDo[1]);
+            int trucZ = int.Parse(toaDo[2]);
+
+            int maLogicHienTai = int.Parse(dongID[i].Trim());
+
+            Vector3 viTriSinh = new Vector3(trucX, trucY, 0);
+            GameObject vienGachMoi = Instantiate(banMauVienGach, viTriSinh, Quaternion.identity);
+
+            DemoTileController trinhDieuKhienTile = vienGachMoi.GetComponent<DemoTileController>();
+            trinhDieuKhienTile.ThietLapDuLieu(maLogicHienTai, trucZ, tuDienAnhXa[maLogicHienTai]);
+
+            danhSachTatCaGach.Add(trinhDieuKhienTile);
+        }
+    }
+
+    void TinhToanMangLuoiCheLap()
+    {
+        for (int i = 0; i < danhSachTatCaGach.Count; i++)
+        {
+            DemoTileController gachA = danhSachTatCaGach[i];
+
+            for (int j = 0; j < danhSachTatCaGach.Count; j++)
+            {
+                if (i == j) continue;
+
+                DemoTileController gachB = danhSachTatCaGach[j];
+
+                if (gachA.chiSoLop > gachB.chiSoLop)
+                {
+                    float khoangCachX = Mathf.Abs(gachA.transform.position.x - gachB.transform.position.x);
+                    float khoangCachY = Mathf.Abs(gachA.transform.position.y - gachB.transform.position.y);
+
+                    if (khoangCachX < 2f && khoangCachY < 2f)
+                    {
+                        gachA.danhSachGachBiDe.Add(gachB);
+                        gachB.danhSachGachDeLen.Add(gachA);
+                    }
+                }
+            }
+        }
+
+        foreach (DemoTileController gach in danhSachTatCaGach)
+        {
+            gach.KiemTraTrangThai();
+        }
+    }
+}
