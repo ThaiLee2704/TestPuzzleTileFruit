@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -67,7 +67,7 @@ public class DemoLevelManager : MonoBehaviour
             GameObject vienGachMoi = Instantiate(banMauVienGach, viTriSinh, Quaternion.identity);
 
             DemoTileController trinhDieuKhienTile = vienGachMoi.GetComponent<DemoTileController>();
-            trinhDieuKhienTile.ThietLapDuLieu(currentTileID, trucZ, tuDienAnhXa[currentTileID]);
+            trinhDieuKhienTile.SetUpTile(currentTileID, trucZ, tuDienAnhXa[currentTileID]);
 
             danhSachTatCaGach.Add(trinhDieuKhienTile);
 
@@ -87,15 +87,15 @@ public class DemoLevelManager : MonoBehaviour
 
                 DemoTileController gachB = danhSachTatCaGach[j];
 
-                if (gachA.chiSoLop > gachB.chiSoLop)
+                if (gachA.OrderLayer > gachB.OrderLayer)
                 {
                     float khoangCachX = Mathf.Abs(gachA.transform.position.x - gachB.transform.position.x);
                     float khoangCachY = Mathf.Abs(gachA.transform.position.y - gachB.transform.position.y);
 
                     if (khoangCachX < 2f && khoangCachY < 2f)
                     {
-                        gachA.danhSachGachBiDe.Add(gachB);
-                        gachB.danhSachGachDeLen.Add(gachA);
+                        gachA.LowerTiles.Add(gachB);
+                        gachB.UpperTiles.Add(gachA);
                     }
                 }
             }
@@ -103,7 +103,7 @@ public class DemoLevelManager : MonoBehaviour
 
         foreach (DemoTileController gach in danhSachTatCaGach)
         {
-            gach.KiemTraTrangThai();
+            gach.CheckStateTile();
         }
     }
 
@@ -113,23 +113,23 @@ public class DemoLevelManager : MonoBehaviour
         {
             float x = gachA.transform.position.x;
             float y = gachA.transform.position.y;
-            int z = gachA.chiSoLop;
+            int z = gachA.OrderLayer;
 
             foreach (DemoTileController gachB in danhSachTatCaGach)
             {
-                if (gachA == gachB || gachA.chiSoLop > gachB.chiSoLop) continue;
+                if (gachA == gachB || gachA.OrderLayer > gachB.OrderLayer) continue;
 
                 float khoangCachX = Mathf.Abs(x - gachB.transform.position.x);
                 float khoangCachY = Mathf.Abs(y - gachB.transform.position.y);
 
                 if (khoangCachX < 2f && khoangCachY < 2f)
                 {
-                    gachA.danhSachGachDeLen.Add(gachB);
-                    gachB.danhSachGachBiDe.Add(gachA);
+                    gachA.UpperTiles.Add(gachB);
+                    gachB.LowerTiles.Add(gachA);
                 }
             }
 
-            gachA.KiemTraTrangThai();
+            gachA.CheckStateTile();
         }
     }
 }

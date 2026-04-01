@@ -228,10 +228,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44c0aa39795b8ad409e0b5ec08615948, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maNhomLogic: 0
-  chiSoLop: 0
-  anhNen: {fileID: 3306401008977083050}
-  anhIcon: {fileID: 1395508860324959882}
-  boVaCham: {fileID: 0}
-  danhSachGachDeLen: []
-  danhSachGachBiDe: []
+  IDTile: 0
+  OrderLayer: 0
+  SpriteBG: {fileID: 3306401008977083050}
+  SpriteIcon: {fileID: 1395508860324959882}
+  Collider: {fileID: 7379855978903112607}
+  UpperTiles: []
+  LowerTiles: []

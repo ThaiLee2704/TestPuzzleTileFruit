@@ -5,59 +5,58 @@ using UnityEngine;
 
 public class DemoTileController : MonoBehaviour
 {
-    public int iDTile;
-    public int chiSoLop;
+    public int IDTile;
+    public int OrderLayer;
 
-    [Header("Thành phần hình ảnh")]
-    public SpriteRenderer anhNen;
-    public SpriteRenderer anhIcon;
-    public BoxCollider2D boVaCham;
+    public SpriteRenderer SpriteBG;
+    public SpriteRenderer SpriteIcon;
+    public BoxCollider2D Collider;
 
-    public List<DemoTileController> danhSachGachDeLen = new List<DemoTileController>();
-    public List<DemoTileController> danhSachGachBiDe = new List<DemoTileController>();
+    public List<DemoTileController> UpperTiles = new List<DemoTileController>();
+    public List<DemoTileController> LowerTiles = new List<DemoTileController>();
 
-    public static event Action<DemoTileController> SuKienGachDuocChon;
+    public static event Action<DemoTileController> OnPickedTile;
 
     private void Awake()
     {
-        boVaCham = GetComponent<BoxCollider2D>();
+        Collider = GetComponent<BoxCollider2D>();
     }
 
-    public void ThietLapDuLieu(int iDTile, int lop, Sprite hinhAnh)
+    public void SetUpTile(int iDTile, int orderLayer, Sprite spriteInDictionary)
     {
-        this.iDTile = iDTile;
-        chiSoLop = lop;
-        anhIcon.sprite = hinhAnh;
+        IDTile = iDTile;
+        OrderLayer = orderLayer;
+        SpriteIcon.sprite = spriteInDictionary;
 
-        anhNen.sortingOrder = lop * 10;
-        anhIcon.sortingOrder = lop * 10 + 1;
+        SpriteBG.sortingOrder = orderLayer * 10;
+        SpriteIcon.sortingOrder = orderLayer * 10 + 1;
     }
 
-    public void KiemTraTrangThai()
+    public void CheckStateTile()
     {
-        bool khongBiDe = danhSachGachDeLen.Count == 0;
+        bool haveUpperTile = UpperTiles.Count == 0;
 
-        anhIcon.color = khongBiDe ? Color.white : Color.gray;
-        anhNen.color = khongBiDe ? Color.white : Color.gray;
-        boVaCham.enabled = khongBiDe;
+        SpriteIcon.color = haveUpperTile ? Color.white : Color.gray;
+        SpriteBG.color = haveUpperTile ? Color.white : Color.gray;
+        Collider.enabled = haveUpperTile;
     }
 
     private void OnMouseDown()
     {
-        foreach (DemoTileController tile in danhSachGachBiDe)
+        foreach (DemoTileController lowerTile in LowerTiles)
         {
-            tile.GoBoGachDeLen(this);
+            lowerTile.RemoveUpperTile(this);
         }
 
-        danhSachGachBiDe.Clear();
-        boVaCham.enabled = false;
+        LowerTiles.Clear();
+        Collider.enabled = false;
 
-        SuKienGachDuocChon?.Invoke(this);
+        OnPickedTile?.Invoke(this);
     }
 
-    public void GoBoGachDeLen(DemoTileController gachBenTren)
+    public void RemoveUpperTile(DemoTileController upperTile)
     {
-        danhSachGachDeLen.Remove(gachBenTren);
-        KiemTraTrangThai();
+        UpperTiles.Remove(upperTile);
+        CheckStateTile();
     }
 }

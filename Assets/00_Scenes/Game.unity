@@ -235,9 +235,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2669094178bdd54eb375eed0a324f14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tepPos: {fileID: 4900000, guid: 52759bb7f39e27e4b94e3cc26fdeeec6, type: 3}
-  tepID: {fileID: 4900000, guid: f63a1f00af9a7194682986fee66a023c, type: 3}
-  tepListID: {fileID: 4900000, guid: 1f2c0f03ea3c0fb43b783ffc467de1a6, type: 3}
+  tepPos: {fileID: 4900000, guid: 88a018177d10e41438fa335e0dd2fd0a, type: 3}
+  tepID: {fileID: 4900000, guid: 14d9b2076f09d9645a6da58c30cabd0b, type: 3}
+  tepListID: {fileID: 4900000, guid: 0fe54e0e289771947b257171b461c0b8, type: 3}
   banMauVienGach: {fileID: 7298438978352019900, guid: f274cf2684888a941821196dfb9536e2, type: 3}
   mangHinhAnhTraiCay:
   - {fileID: 21300000, guid: 398c8f6ce2317bf4b8d8e1b1e9e91708, type: 3}
@@ -845,7 +845,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b267a53b87aa6ac45a7b0d0d414f8bac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viTriKhay:
+  TrayPositions:
   - {fileID: 1258979573}
   - {fileID: 848499613}
   - {fileID: 319379146}

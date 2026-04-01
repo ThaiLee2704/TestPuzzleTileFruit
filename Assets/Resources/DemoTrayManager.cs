@@ -5,75 +5,72 @@ using UnityEngine;
 
 public class DemoTrayManager : Singleton<DemoTrayManager>
 {
-    public LinkedList<DemoTileController> danhSachTrongKhay = new LinkedList<DemoTileController>();
-    public Transform[] viTriKhay;
+    public LinkedList<DemoTileController> TrayTiles = new LinkedList<DemoTileController>();
+    public Transform[] TrayPositions;
 
     private void OnEnable()
     {
-        DemoTileController.SuKienGachDuocChon += ThemVaoKhay;
+        DemoTileController.OnPickedTile += AddToTray;
     }
 
     private void OnDisable()
     {
-        DemoTileController.SuKienGachDuocChon -= ThemVaoKhay;
+        DemoTileController.OnPickedTile -= AddToTray;
     }
 
-    public void ThemVaoKhay(DemoTileController gachDuocChon)
+    public void AddToTray(DemoTileController PickedTile)
     {
-        if (danhSachTrongKhay.Count >= 7)
-        {
-            //Debug.Log("Khay đã đầy, không thể thêm gạch nữa!");
+        if (TrayTiles.Count >= 7)
             return;
-        }
 
         LinkedListNode<DemoTileController> nutChenSau = null;
-        LinkedListNode<DemoTileController> nutHienTai = danhSachTrongKhay.First;
+        LinkedListNode<DemoTileController> nutHienTai = TrayTiles.First;
 
         while (nutHienTai != null)
         {
-            if (nutHienTai.Value.iDTile == gachDuocChon.iDTile)
+            if (nutHienTai.Value.IDTile == PickedTile.IDTile)
                 nutChenSau = nutHienTai;
 
             nutHienTai = nutHienTai.Next;
         }
 
         if (nutChenSau != null)
-            danhSachTrongKhay.AddAfter(nutChenSau, gachDuocChon);
+            TrayTiles.AddAfter(nutChenSau, PickedTile);
         else
-            danhSachTrongKhay.AddLast(gachDuocChon);
+            TrayTiles.AddLast(PickedTile);
 
         CapNhatViTriHienThi();
 
-        KiemTraGhepBa(gachDuocChon.iDTile);
+        KiemTraGhepBa(PickedTile.IDTile);
     }
 
     private void CapNhatViTriHienThi()
     {
         int chiSo = 0;
 
-        foreach (DemoTileController gach in danhSachTrongKhay)
+        foreach (DemoTileController gach in TrayTiles)
         {
-            gach.transform.position = viTriKhay[chiSo].position;
-            gach.anhNen.sortingOrder = 1000 + chiSo * 10;
-            gach.anhIcon.sortingOrder = 1000 + chiSo * 10 + 1;
+            gach.transform.position = TrayPositions[chiSo].position;
+            gach.SpriteBG.sortingOrder = 1000 + chiSo * 10;
+            gach.SpriteIcon.sortingOrder = 1000 + chiSo * 10 + 1;
             chiSo++;
         }
     }
 
     private void KiemTraGhepBa(int maLogicVuaThem)
     {
-        var gachCungLoai = danhSachTrongKhay.Where(x => x.iDTile == maLogicVuaThem).ToList();
+        var gachCungLoai = TrayTiles.Where(x => x.IDTile == maLogicVuaThem).ToList();
 
         if (gachCungLoai.Count == 3)
         {
             foreach (DemoTileController gach in gachCungLoai)
             {
-                danhSachTrongKhay.Remove(gach);
+                TrayTiles.Remove(gach);
                 gach.gameObject.SetActive(false);
             }
             CapNhatViTriHienThi();
         }
-        else if (danhSachTrongKhay.Count >= 7)
+        else if (TrayTiles.Count >= 7)
         {
             Debug.Log("Không ghép được, khay đã đầy!");
         }
