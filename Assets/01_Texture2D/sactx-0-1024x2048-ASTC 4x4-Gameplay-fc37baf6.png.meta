@@ -152,7 +152,7 @@ TextureImporter:
         width: 159
         height: 159
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -160,6 +160,27 @@ TextureImporter:
       bones: []
       spriteID: 895ca8ad2d91d684a82ce3e2fd78fcdc
       internalID: -1392094549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: sactx-0-1024x2048-ASTC 4x4-Gameplay-fc37baf6_2
+      rect:
+        serializedVersion: 2
+        x: 620
+        y: 220
+        width: 127
+        height: 126
+      alignment: 9
+      pivot: {x: 0.5, y: 0.53}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f1456eda7e8ea4e47b70b0c8f42177cf
+      internalID: -950078054
       vertices: []
       indices: 
       edges: []

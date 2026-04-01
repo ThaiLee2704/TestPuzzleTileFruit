@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class DemoTileController : MonoBehaviour
 {
-    public int maNhomLogic;
+    public int iDTile;
     public int chiSoLop;
 
     [Header("Thành phần hình ảnh")]
@@ -15,37 +16,30 @@ public class DemoTileController : MonoBehaviour
     public List<DemoTileController> danhSachGachDeLen = new List<DemoTileController>();
     public List<DemoTileController> danhSachGachBiDe = new List<DemoTileController>();
 
+    public static event Action<DemoTileController> SuKienGachDuocChon;
+
     private void Awake()
     {
         boVaCham = GetComponent<BoxCollider2D>();
     }
 
-    public void ThietLapDuLieu(int maLogic, int lop, Sprite hinhAnh)
+    public void ThietLapDuLieu(int iDTile, int lop, Sprite hinhAnh)
     {
-        maNhomLogic = maLogic;
+        this.iDTile = iDTile;
         chiSoLop = lop;
         anhIcon.sprite = hinhAnh;
 
         anhNen.sortingOrder = lop * 10;
-        anhIcon.sortingOrder = lop * 10 + 1; 
+        anhIcon.sortingOrder = lop * 10 + 1;
     }
 
     public void KiemTraTrangThai()
     {
-        if (danhSachGachDeLen.Count == 0)
-        {
-            anhIcon.color = Color.white;
-            anhNen.color = Color.white;
+        bool khongBiDe = danhSachGachDeLen.Count == 0;
 
-            boVaCham.enabled = true;
-        }
-        else
-        {
-            anhIcon.color = Color.gray;
-            anhNen.color = Color.gray;
-
-            boVaCham.enabled = false;
-        }
+        anhIcon.color = khongBiDe ? Color.white : Color.gray;
+        anhNen.color = khongBiDe ? Color.white : Color.gray;
+        boVaCham.enabled = khongBiDe;
     }
 
     private void OnMouseDown()
@@ -55,7 +49,10 @@ public class DemoTileController : MonoBehaviour
             tile.GoBoGachDeLen(this);
         }
 
-        this.gameObject.SetActive(false);
+        danhSachGachBiDe.Clear();
+        boVaCham.enabled = false;
+
+        SuKienGachDuocChon?.Invoke(this);
     }
 
     public void GoBoGachDeLen(DemoTileController gachBenTren)

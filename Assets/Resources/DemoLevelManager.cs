@@ -14,16 +14,18 @@ public class DemoLevelManager : MonoBehaviour
 
     private List<DemoTileController> danhSachTatCaGach = new List<DemoTileController>();
 
+    private Dictionary<Vector3, DemoTileController> banDoKhongGian = new Dictionary<Vector3, DemoTileController>();
+
     private void Start()
     {
         TaoManChoi();
-        TinhToanMangLuoiCheLap();
+        TinhToanMangLuoiCheLapToiUu();
     }
 
     void TaoManChoi()
     {
         string[] dongPos = tepPos.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
-        string[] dongID = tepID.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+        string[] IDLines = tepID.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
         string[] dongListID = tepListID.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
 
         List<int> danhSachHinhAnh = new List<int>();
@@ -36,7 +38,7 @@ public class DemoLevelManager : MonoBehaviour
         danhSachHinhAnh = danhSachHinhAnh.OrderBy(x => Random.value).ToList();
 
         List<int> danhSachNhomLogic = new List<int>();
-        foreach (string dong in dongID)
+        foreach (string dong in IDLines)
         {
             int maLogic = int.Parse(dong.Trim());
             if (!danhSachNhomLogic.Contains(maLogic))
@@ -59,15 +61,17 @@ public class DemoLevelManager : MonoBehaviour
             float trucY = float.Parse(toaDo[1]);
             int trucZ = int.Parse(toaDo[2]);
 
-            int maLogicHienTai = int.Parse(dongID[i].Trim());
+            int currentTileID = int.Parse(IDLines[i].Trim());
 
-            Vector3 viTriSinh = new Vector3(trucX, trucY, 0);
+            Vector3 viTriSinh = new Vector3(trucX, trucY, -trucZ);
             GameObject vienGachMoi = Instantiate(banMauVienGach, viTriSinh, Quaternion.identity);
 
             DemoTileController trinhDieuKhienTile = vienGachMoi.GetComponent<DemoTileController>();
-            trinhDieuKhienTile.ThietLapDuLieu(maLogicHienTai, trucZ, tuDienAnhXa[maLogicHienTai]);
+            trinhDieuKhienTile.ThietLapDuLieu(currentTileID, trucZ, tuDienAnhXa[currentTileID]);
 
             danhSachTatCaGach.Add(trinhDieuKhienTile);
+
+            banDoKhongGian[viTriSinh] = trinhDieuKhienTile;
         }
     }
 
@@ -100,6 +104,32 @@ public class DemoLevelManager : MonoBehaviour
         foreach (DemoTileController gach in danhSachTatCaGach)
         {
             gach.KiemTraTrangThai();
+        }
+    }
+
+    void TinhToanMangLuoiCheLapToiUu()
+    {
+        foreach (DemoTileController gachA in danhSachTatCaGach)
+        {
+            float x = gachA.transform.position.x;
+            float y = gachA.transform.position.y;
+            int z = gachA.chiSoLop;
+
+            foreach (DemoTileController gachB in danhSachTatCaGach)
+            {
+                if (gachA == gachB || gachA.chiSoLop > gachB.chiSoLop) continue;
+
+                float khoangCachX = Mathf.Abs(x - gachB.transform.position.x);
+                float khoangCachY = Mathf.Abs(y - gachB.transform.position.y);
+
+                if (khoangCachX < 2f && khoangCachY < 2f)
+                {
+                    gachA.danhSachGachDeLen.Add(gachB);
+                    gachB.danhSachGachBiDe.Add(gachA);
+                }
+            }
+
+            gachA.KiemTraTrangThai();
         }
     }
 }
