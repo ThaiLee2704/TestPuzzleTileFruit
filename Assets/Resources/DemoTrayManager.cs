@@ -5,8 +5,11 @@ using UnityEngine;
 
 public class DemoTrayManager : Singleton<DemoTrayManager>
 {
-    public LinkedList<DemoTileController> TrayTiles = new LinkedList<DemoTileController>();
-    public Transform[] TrayPositions;
+    [SerializeField] private Transform[] TrayPositions;
+    private LinkedList<DemoTileController> TrayTiles = new LinkedList<DemoTileController>();
+    //Dictionary ID Tile mapping to the last Node in the LinkedList with that ID Tile, to optimize adding new tile to the tray
+    //Key: TileID - Value: Last node in the LinkedList with that TileID
+    private Dictionary<int, LinkedListNode<DemoTileController>> DictLastNodeByTileID = new Dictionary<int, LinkedListNode<DemoTileController>>();
 
     private void OnEnable()
     {
@@ -23,52 +26,53 @@ public class DemoTrayManager : Singleton<DemoTrayManager>
         if (TrayTiles.Count >= 7)
             return;
 
-        LinkedListNode<DemoTileController> nutChenSau = null;
-        LinkedListNode<DemoTileController> nutHienTai = TrayTiles.First;
+        int iDTile = PickedTile.IDTile;
 
-        while (nutHienTai != null)
-        {
-            if (nutHienTai.Value.IDTile == PickedTile.IDTile)
-                nutChenSau = nutHienTai;
+        LinkedListNode<DemoTileController> newNode;
 
-            nutHienTai = nutHienTai.Next;
-        }
-
-        if (nutChenSau != null)
-            TrayTiles.AddAfter(nutChenSau, PickedTile);
+        if (DictLastNodeByTileID.TryGetValue(iDTile, out LinkedListNode<DemoTileController> lastNodeByTileID))
+            //If ID of PickedTile same as the ID of Tile in the Dict, add PickedTile after the last Tile with the same ID in the LinkedList
+            newNode = TrayTiles.AddAfter(lastNodeByTileID, PickedTile);
         else
-            TrayTiles.AddLast(PickedTile);
+            //If ID of PickedTile different from all IDs of Tiles in the Dict, add PickedTile to the end of the LinkedList
+            newNode = TrayTiles.AddLast(PickedTile);
 
-        CapNhatViTriHienThi();
+        //Update the last node with the same ID in the Dict = newNode
+        DictLastNodeByTileID[iDTile] = newNode;
 
-        KiemTraGhepBa(PickedTile.IDTile);
+        UpdateTileInTray();
+
+        HandleMatch3(PickedTile.IDTile);
     }
 
-    private void CapNhatViTriHienThi()
+    private void UpdateTileInTray()
     {
-        int chiSo = 0;
+        int index = 0;
 
-        foreach (DemoTileController gach in TrayTiles)
+        foreach (DemoTileController tile in TrayTiles)
         {
-            gach.transform.position = TrayPositions[chiSo].position;
-            gach.SpriteBG.sortingOrder = 1000 + chiSo * 10;
-            gach.SpriteIcon.sortingOrder = 1000 + chiSo * 10 + 1;
-            chiSo++;
+            tile.transform.position = TrayPositions[index].position;
+            index++;
         }
     }
 
-    private void KiemTraGhepBa(int maLogicVuaThem)
+    private void HandleMatch3(int newTileID)
     {
-        var gachCungLoai = TrayTiles.Where(x => x.IDTile == maLogicVuaThem).ToList();
+        var tilesWithSameID = TrayTiles.Where(x => x.IDTile == newTileID).ToList();
 
-        if (gachCungLoai.Count == 3)
+        if (tilesWithSameID.Count == 3)
         {
-            foreach (DemoTileController gach in gachCungLoai)
+            foreach (DemoTileController tile in tilesWithSameID)
             {
-                TrayTiles.Remove(gach);
-                gach.gameObject.SetActive(false);
+                //Remove 3 tiles with the same ID in the LinkedList and set them inactive
+                TrayTiles.Remove(tile);
+                tile.gameObject.SetActive(false);
             }
-            CapNhatViTriHienThi();
+
+            //Remove the entry with key = newTileID in the Dict, because there is no tile with that ID in the LinkedList after removing 3 tiles
+            DictLastNodeByTileID.Remove(newTileID);
+
+            UpdateTileInTray();
         }
         else if (TrayTiles.Count >= 7)
         {

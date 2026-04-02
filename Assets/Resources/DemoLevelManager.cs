@@ -3,133 +3,161 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[System.Serializable]
+public struct LevelData
+{
+    public TextAsset posData;
+    public TextAsset iDData;
+    public TextAsset listIDData;
+}
+
 public class DemoLevelManager : MonoBehaviour
 {
-    public TextAsset tepPos;
-    public TextAsset tepID;
-    public TextAsset tepListID;
+    [Header("Level Data")]
+    public LevelData[] Levels;
 
-    public GameObject banMauVienGach;
-    public Sprite[] mangHinhAnhTraiCay;
+    //[Header("Data Level")]
+    //[SerializeField] private TextAsset posData;
+    //[SerializeField] private TextAsset iDData;
+    //[SerializeField] private TextAsset listIDData;
 
-    private List<DemoTileController> danhSachTatCaGach = new List<DemoTileController>();
+    [SerializeField] private GameObject TilePrefab;
+    [SerializeField] private Sprite[] fruitSprites;
 
-    private Dictionary<Vector3, DemoTileController> banDoKhongGian = new Dictionary<Vector3, DemoTileController>();
+    private List<DemoTileController> allTiles = new List<DemoTileController>();
+
+    //private Dictionary<Vector3, DemoTileController> DictPosOfTile = new Dictionary<Vector3, DemoTileController>();
 
     private void Start()
     {
-        TaoManChoi();
-        TinhToanMangLuoiCheLapToiUu();
+        //CreatLevel();
+        //HandleSortingTile();
     }
 
-    void TaoManChoi()
+    public void LoadLevel(int levelIndex)
     {
-        string[] dongPos = tepPos.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
-        string[] IDLines = tepID.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
-        string[] dongListID = tepListID.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
-
-        List<int> danhSachHinhAnh = new List<int>();
-
-        foreach (string dong in dongListID)
+        if (levelIndex < 0 || levelIndex >= Levels.Length)
         {
-            danhSachHinhAnh.Add(int.Parse(dong.Trim()));
+            Debug.LogError("Invalid level index: " + levelIndex);
+            return;
         }
 
-        danhSachHinhAnh = danhSachHinhAnh.OrderBy(x => Random.value).ToList();
-
-        List<int> danhSachNhomLogic = new List<int>();
-        foreach (string dong in IDLines)
+        foreach (DemoTileController tile in allTiles)
         {
-            int maLogic = int.Parse(dong.Trim());
-            if (!danhSachNhomLogic.Contains(maLogic))
+            Destroy(tile.gameObject);
+        }
+
+        allTiles.Clear();
+        //DictPosOfTile.Clear();
+
+        LevelData currentLevel = Levels[levelIndex];
+        CreatLevel(currentLevel);
+        HandleSortingTile();
+    }
+
+    void CreatLevel(LevelData levelData)
+    {
+        //Read data
+        string[] posLines = levelData.posData.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+        string[] iDLines = levelData.iDData.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+        string[] listIDLines = levelData.listIDData.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        //Create list ID Icon
+        List<int> listIcons = new List<int>();
+
+        foreach (string listIDLine in listIDLines)
+        {
+            listIcons.Add(int.Parse(listIDLine.Trim()));
+        }
+        //Random list ID Icon
+        listIcons = listIcons.OrderBy(x => Random.value).ToList();
+
+        //Create list ID Tile
+        List<int> listIDs = new List<int>();
+        foreach (string iDLine in iDLines)
+        {
+            int iD = int.Parse(iDLine.Trim());
+            if (!listIDs.Contains(iD))
             {
-                danhSachNhomLogic.Add(maLogic);
+                //Add different ID Tile to list ID Tile
+                listIDs.Add(iD);
             }
         }
 
-        Dictionary<int, Sprite> tuDienAnhXa = new Dictionary<int, Sprite>();
-        for (int i = 0; i < danhSachNhomLogic.Count; i++)
+        //Create dictionary to map ID Tile to Icon Sprite
+        Dictionary<int, Sprite> DictIconForTile = new Dictionary<int, Sprite>();
+        for (int i = 0; i < listIDs.Count; i++)
         {
-            int maHinhAnh = danhSachHinhAnh[i];
-            tuDienAnhXa.Add(danhSachNhomLogic[i], mangHinhAnhTraiCay[maHinhAnh]);
+            int iconID = listIcons[i];
+            DictIconForTile.Add(listIDs[i], fruitSprites[iconID]);
         }
 
-        for (int i = 0; i < dongPos.Length; i++)
+        //Create Tile and Set up Tile
+        for (int i = 0; i < posLines.Length; i++)
         {
-            string[] toaDo = dongPos[i].Trim().Split('-');
-            float trucX = float.Parse(toaDo[0]);
-            float trucY = float.Parse(toaDo[1]);
-            int trucZ = int.Parse(toaDo[2]);
+            string[] coordinatesTile = posLines[i].Trim().Split('-');
+            float xPos = float.Parse(coordinatesTile[0]);
+            float yPos = float.Parse(coordinatesTile[1]);
+            int zPos = int.Parse(coordinatesTile[2]);
 
-            int currentTileID = int.Parse(IDLines[i].Trim());
+            int currentTileID = int.Parse(iDLines[i].Trim());
 
-            Vector3 viTriSinh = new Vector3(trucX, trucY, -trucZ);
-            GameObject vienGachMoi = Instantiate(banMauVienGach, viTriSinh, Quaternion.identity);
+            Vector3 spawnPos = new Vector3(xPos, yPos, 0);
+            GameObject newTile = Instantiate(TilePrefab, spawnPos, Quaternion.identity);
 
-            DemoTileController trinhDieuKhienTile = vienGachMoi.GetComponent<DemoTileController>();
-            trinhDieuKhienTile.SetUpTile(currentTileID, trucZ, tuDienAnhXa[currentTileID]);
+            DemoTileController tileController = newTile.GetComponent<DemoTileController>();
+            tileController.SetUpTile(currentTileID, zPos, DictIconForTile[currentTileID]);
 
-            danhSachTatCaGach.Add(trinhDieuKhienTile);
+            allTiles.Add(tileController);
 
-            banDoKhongGian[viTriSinh] = trinhDieuKhienTile;
+            //DictPosOfTile[spawnPos] = tileController;
         }
     }
 
-    void TinhToanMangLuoiCheLap()
+    void HandleSortingTile()
     {
-        for (int i = 0; i < danhSachTatCaGach.Count; i++)
+        //Find max layer of tile
+        int maxLayer = allTiles.Max(tile => tile.OrderLayer);
+
+        foreach (DemoTileController tileA in allTiles)
         {
-            DemoTileController gachA = danhSachTatCaGach[i];
+            //float xTileA = tileA.transform.position.x;
+            //float yTileA = tileA.transform.position.y;
+            //int zTileA = tileA.OrderLayer;
 
-            for (int j = 0; j < danhSachTatCaGach.Count; j++)
+            ////Find upper tiles of tileA
+            //for (int zTileB = zTileA + 1; zTileB <= maxLayer; zTileB++)
+            //{
+            //    for (int distanceX = -1; distanceX <= 1; distanceX++)
+            //    {
+            //        for (int distanceY = -1; distanceY <= 1; distanceY++)
+            //        {
+            //            Vector3 checkPos = new Vector3(xTileA + distanceX, yTileA + distanceY, 0);
+
+            //            if (DictPosOfTile.TryGetValue(checkPos, out DemoTileController tileB))
+            //            {
+            //                tileA.UpperTiles.Add(tileB);
+            //                tileB.LowerTiles.Add(tileA);
+            //            }
+            //        }
+            //    }
+            //}
+
+            foreach (DemoTileController tileB in allTiles)
             {
-                if (i == j) continue;
+                if (tileA == tileB || tileA.OrderLayer > tileB.OrderLayer) continue;
 
-                DemoTileController gachB = danhSachTatCaGach[j];
+                float distanceX = Mathf.Abs(tileA.transform.position.x - tileB.transform.position.x);
+                float distanceY = Mathf.Abs(tileA.transform.position.y - tileB.transform.position.y);
 
-                if (gachA.OrderLayer > gachB.OrderLayer)
+                if (distanceX < 2f && distanceY < 2f)
                 {
-                    float khoangCachX = Mathf.Abs(gachA.transform.position.x - gachB.transform.position.x);
-                    float khoangCachY = Mathf.Abs(gachA.transform.position.y - gachB.transform.position.y);
-
-                    if (khoangCachX < 2f && khoangCachY < 2f)
-                    {
-                        gachA.LowerTiles.Add(gachB);
-                        gachB.UpperTiles.Add(gachA);
-                    }
+                    tileA.UpperTiles.Add(tileB);
+                    tileB.LowerTiles.Add(tileA);
                 }
             }
-        }
 
-        foreach (DemoTileController gach in danhSachTatCaGach)
-        {
-            gach.CheckStateTile();
-        }
-    }
-
-    void TinhToanMangLuoiCheLapToiUu()
-    {
-        foreach (DemoTileController gachA in danhSachTatCaGach)
-        {
-            float x = gachA.transform.position.x;
-            float y = gachA.transform.position.y;
-            int z = gachA.OrderLayer;
-
-            foreach (DemoTileController gachB in danhSachTatCaGach)
-            {
-                if (gachA == gachB || gachA.OrderLayer > gachB.OrderLayer) continue;
-
-                float khoangCachX = Mathf.Abs(x - gachB.transform.position.x);
-                float khoangCachY = Mathf.Abs(y - gachB.transform.position.y);
-
-                if (khoangCachX < 2f && khoangCachY < 2f)
-                {
-                    gachA.UpperTiles.Add(gachB);
-                    gachB.LowerTiles.Add(gachA);
-                }
-            }
-
-            gachA.CheckStateTile();
+            tileA.SetStateTile();
         }
     }
 }

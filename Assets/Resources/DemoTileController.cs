@@ -5,12 +5,14 @@ using UnityEngine;
 
 public class DemoTileController : MonoBehaviour
 {
-    public int IDTile;
-    public int OrderLayer;
+    private int iDTile;
+    public int IDTile => iDTile;
+    private int orderLayer;
+    public int OrderLayer => orderLayer;
 
-    public SpriteRenderer SpriteBG;
-    public SpriteRenderer SpriteIcon;
-    public BoxCollider2D Collider;
+    [SerializeField] private SpriteRenderer SpriteBG;
+    [SerializeField] private SpriteRenderer SpriteIcon;
+    [SerializeField] private BoxCollider2D Collider;
 
     public List<DemoTileController> UpperTiles = new List<DemoTileController>();
     public List<DemoTileController> LowerTiles = new List<DemoTileController>();
@@ -24,15 +26,15 @@ public class DemoTileController : MonoBehaviour
 
     public void SetUpTile(int iDTile, int orderLayer, Sprite spriteInDictionary)
     {
-        IDTile = iDTile;
-        OrderLayer = orderLayer;
+        this.iDTile = iDTile;
+        this.orderLayer = orderLayer;
         SpriteIcon.sprite = spriteInDictionary;
 
         SpriteBG.sortingOrder = orderLayer * 10;
         SpriteIcon.sortingOrder = orderLayer * 10 + 1;
     }
 
-    public void CheckStateTile()
+    public void SetStateTile()
     {
         bool haveUpperTile = UpperTiles.Count == 0;
 
@@ -57,6 +59,6 @@ public class DemoTileController : MonoBehaviour
     public void RemoveUpperTile(DemoTileController upperTile)
     {
         UpperTiles.Remove(upperTile);
-        CheckStateTile();
+        SetStateTile();
     }
 }
